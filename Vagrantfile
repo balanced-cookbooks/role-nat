@@ -5,6 +5,13 @@
 # Vagrant VMs
 host_cache_path = File.expand_path('../.cache', __FILE__)
 guest_cache_path = '/tmp/vagrant-cache'
+confucius_root = ENV['CONFUCIUS_ROOT']
+
+unless confucius_root
+  warn "[\e[1m\e[31mERROR\e[0m]: Please set the 'CONFUCIUS_ROOT' " +
+       'environment variable to point to the confucius repo'
+  exit 1
+end
 
 ::Dir.mkdir(host_cache_path) unless ::Dir.exist?(host_cache_path)
 
@@ -33,10 +40,6 @@ Vagrant.configure('2') do |config|
 
   # Berkshelf plugin configuration
   config.berkshelf.enabled = true
-
-  # Chef-Zero plugin configuration
-  config.chef_zero.enabled = true
-  config.chef_zero.chef_repo_path = '../../'
 
   # Omnibus
   config.omnibus.chef_version = :latest
@@ -115,30 +118,32 @@ EOF
     override.ssh.private_key_path = "#{ENV['AWS_HOME']}/#{default[:keypair]}.pem"
   end
 
-  if ENV['USE_CHEF_CLIENT']
+  config.vm.provision :chef_solo do |chef|
+    chef.log_level = :debug
+    chef.data_bags_path = "#{confucius_root}/data_bags"
+    chef.json = {
+        :rsyslog => {
+            :remote_logs => true,
+            :protocol => 'udp',
+            :server_ip => '10.0.2.2',
+        }
+    }
+    chef.run_list = [
+        "recipe[#{default[:project]}]"
+    ]
+  end
 
-    config.vm.provision :chef_client do |chef|
-      chef.log_level = :debug
-      chef.environment = 'dev'
-      chef.run_list = ["recipe[#{default[:project]}]"]
+  config.vm.provision :chef_client do |chef|
+    chef.log_level = :info
+    config.chef_zero.enabled = true
+    config.chef_zero.chef_repo_path = "#{confucius_root}"
+    unless config.chef_zero.enabled
+      chef.chef_server_url = 'https://confucius.balancedpayments.com'
+      config.berkshelf.enabled = false
     end
-
-  else
-    config.vm.provision :chef_solo do |chef|
-      chef.log_level = :debug
-      chef.data_bags_path = '../../data_bags'
-      chef.json = {
-          :rsyslog => {
-              :remote_logs => true,
-              :protocol => 'udp',
-              :server_ip => '10.0.2.2',
-          }
-      }
-      chef.run_list = [
-          "recipe[#{default[:project]}]"
-      ]
-    end
-
+    chef.environment = 'dev'
+    chef.validation_key_path = ENV['KNIFE_VALIDATION_KEY'] || "#{confucius_root}/.chef/validation.pem"
+    chef.run_list = ["recipe[#{default[:project]}]"]
   end
 
 end
