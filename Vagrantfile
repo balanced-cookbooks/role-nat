@@ -136,6 +136,13 @@ EOF
   config.vm.provision :chef_client do |chef|
     chef.log_level = :info
     config.chef_zero.enabled = true
+    chef.json = {
+        :rsyslog => {
+            :remote_logs => true,
+            :protocol => 'udp',
+            :server_ip => '10.0.2.2',
+        }
+    }
     config.chef_zero.chef_repo_path = "#{confucius_root}"
     unless config.chef_zero.enabled
       chef.chef_server_url = 'https://confucius.balancedpayments.com'
