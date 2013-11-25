@@ -25,12 +25,11 @@
 #
 
 include_recipe 'apt'
-include_recipe 'monit'
 include_recipe 'postfix'
 include_recipe 'munin::client'
 include_recipe 'newrelic-sysmond'
 include_recipe 'rsyslog::client'
 
+include_recipe 'balanced-monit'
 include_recipe 'balanced-user'
-
 include_recipe 'role-nat::port_address_translation'
