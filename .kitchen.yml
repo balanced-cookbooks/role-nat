@@ -1,0 +1,24 @@
+---
+driver:
+  name: vagrant
+  require_chef_omnibus: true
+  customize:
+    memory: 512
+    cpus: 1
+
+provisioner:
+  name: chef_solo
+
+platforms:
+  - name: ubuntu-12.04
+    driver_config:
+      box: opscode-ubuntu-12.04
+      box_url: https://opscode-vm.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box
+suites:
+  - name: default
+    run_list:
+    - recipe[role-nat::default]
+    attributes:
+      citadel:
+        access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+        secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>

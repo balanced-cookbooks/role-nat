@@ -15,3 +15,5 @@ bin/*
 
 # intellij idea
 *.iml
+.kitchen/
+.kitchen.local.yml

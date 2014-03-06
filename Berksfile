@@ -1,5 +1,8 @@
-# -*- mode: ruby -*-
-chef_api :config
-site :opscode
+
+source 'https://berks.vandelay.io/'
+
+group :test do
+  cookbook 'apt'
+end
 
 metadata

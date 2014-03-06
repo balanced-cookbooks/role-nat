@@ -23,10 +23,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-include_recipe 'role-base::setup_hostname'
 include_recipe 'role-base::default'
 
 include_recipe 'rsyslog::client'
-include_recipe 'munin::client'
 
 include_recipe 'role-nat::port_address_translation'
